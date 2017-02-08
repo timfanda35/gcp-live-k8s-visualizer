@@ -48,10 +48,21 @@ var insertByName = function(index, value) {
 };
 
 var groupByName = function() {
-	$.each(pods.items, insertByName);
-	$.each(controllers.items, insertByName);
-	$.each(deployments.items, insertByName);
-	$.each(services.items, insertByName);
+	if (pods.items) {
+		$.each(pods.items, insertByName);
+	}
+
+	if (controllers.items) {
+		$.each(controllers.items, insertByName);
+	}
+
+	if (deployments.items) {
+		$.each(deployments.items, insertByName);
+	}
+
+	if (services.items) {
+		$.each(services.items, insertByName);
+	}
 };
 
 var matchesLabelQuery = function(labels, selector) {
@@ -65,7 +76,8 @@ var matchesLabelQuery = function(labels, selector) {
 }
 
 var connectControllers = function() {
-  connectUses();
+	if (!controllers.items) return;
+
 	for (var i = 0; i < controllers.items.length; i++) {
 		var controller = controllers.items[i];
 		for (var j = 0; j < pods.items.length; j++) {
@@ -83,6 +95,11 @@ var connectControllers = function() {
 			}
 		}
 	}
+}
+
+var connectDeployments = function() {
+	if (!deployments.items) return;
+
 	for (var i = 0; i < deployments.items.length; i++) {
 		var deployment = deployments.items[i];
 		for (var j = 0; j < pods.items.length; j++) {
@@ -99,6 +116,11 @@ var connectControllers = function() {
 			}
 		}
 	}
+}
+
+var connectServices = function() {
+	if (!services.items) return;
+
 	for (var i = 0; i < services.items.length; i++) {
 		var service = services.items[i];
 		for (var j = 0; j < pods.items.length; j++) {
@@ -115,6 +137,13 @@ var connectControllers = function() {
 			}
 		}
 	}
+}
+
+var connectEverything = function() {
+  connectUses();
+  connectControllers();
+  connectDeployments();
+  connectServices();
 };
 
 var colors = [
@@ -302,9 +331,11 @@ var loadData = function() {
 	var deferred = new $.Deferred();
 	var req1 = $.getJSON("/api/v1/namespaces/default/pods?labelSelector=visualize%3Dtrue", function( data ) {
 		pods = data;
+        if (!data.items) return;
+
 		$.each(data.items, function(key, val) {
     	val.type = 'pod';
-      if (val.metadata.annotations && val.metadata.annotations['visualizer/uses']) {
+      	if (val.metadata.annotations && val.metadata.annotations['visualizer/uses']) {
       	var key = val.metadata.labels.app ? val.metadata.labels.app : val.metadata.labels.run;
 		    if (!uses[key]) {
 			  	uses[key] = val.metadata.annotations['visualizer/uses'].split(',');
@@ -317,17 +348,18 @@ var loadData = function() {
 
 	var req2 = $.getJSON("/api/v1/namespaces/default/replicationcontrollers?labelSelector=visualize%3Dtrue", function( data ) {
 		controllers = data;
+        if (!data.items) return;
+
 		$.each(data.items, function(key, val) {
-      val.type = 'replicationController';
-      //console.log("Controller ID = " + val.metadata.name)
+      	val.type = 'replicationController';
     });
 	});
 
 
 	var req3 = $.getJSON("/api/v1/namespaces/default/services?labelSelector=visualize%3Dtrue", function( data ) {
 		services = data;
-		//console.log("loadData(): Services");
-		//console.log(services);
+        if (!data.items) return;
+
 		$.each(data.items, function(key, val) {
       val.type = 'service';
       //console.log("service ID = " + val.metadata.name)
@@ -336,8 +368,8 @@ var loadData = function() {
 
 	var req4 = $.getJSON("/api/v1/nodes", function( data ) {
 		nodes = data;
-		//console.log("loadData(): Services");
-		//console.log(nodes);
+        if (!data.items) return;
+
 		$.each(data.items, function(key, val) {
       val.type = 'node';
       //console.log("service ID = " + val.metadata.name)
@@ -346,6 +378,8 @@ var loadData = function() {
 
 	var req5 = $.getJSON("/apis/extensions/v1beta1/namespaces/default/deployments?labelSelector=visualize%3Dtrue", function( data ) {
 		deployments = data;
+        if (!data.items) return;
+
 		$.each(data.items, function(key, val) {
       val.type = 'deployment';
       //console.log("Controller ID = " + val.metadata.name)
@@ -376,7 +410,7 @@ function refresh(instance) {
       $('#sheet').empty();
       renderNodes();
       renderGroups();
-      connectControllers();
+      connectEverything();
     } finally {
       setTimeout(function() {
         refresh(instance);
