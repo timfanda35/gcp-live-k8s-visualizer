@@ -406,6 +406,7 @@ function refresh(instance) {
 
 	$.when(loadData()).then(function() {
     try {
+      instance.reset();
       groupByName();
       $('#sheet').empty();
       renderNodes();
