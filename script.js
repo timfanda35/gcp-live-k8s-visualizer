@@ -406,16 +406,16 @@ function refresh(instance) {
 
 	$.when(loadData()).then(function() {
     try {
-      instance.reset();
       groupByName();
       $('#sheet').empty();
       renderNodes();
       renderGroups();
       connectEverything();
+      instance.reset();
     } finally {
       setTimeout(function() {
         refresh(instance);
-      }, 1000);
+      }, 2000);
     }
   });
 }
