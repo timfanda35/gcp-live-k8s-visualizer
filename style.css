@@ -12,6 +12,11 @@
   color: white;
 }
 
+.deployment {
+  background-color:rgb(51,105,232);
+  color: white;
+}
+
 .pod {
   width: 100px;
   background-color:#eeeeef;
