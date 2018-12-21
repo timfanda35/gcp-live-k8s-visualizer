@@ -26,4 +26,6 @@ That's it.  The visualizer uses labels to organize the visualization.  In partic
 * ReplicaController: Blue
 * Deployment: Blue
 
+![](screenshot.png)
+
 see more: https://kubecloud.io/setting-up-kubernetes-visualization-of-a-cluster-96826433fc64
